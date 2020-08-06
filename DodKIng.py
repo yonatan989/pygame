@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+import os
 import time
 import threading
 from collections import Iterable
@@ -9,7 +10,7 @@ try:
 except ImportError:
     from .shapes import Ball
 
-
+############################## Vars Definistion ########################################
 # Constants
 WINDOW_WIDTH = 1920
 WINDOW_HEIGHT = 1080
@@ -21,49 +22,48 @@ BLACK = (0,0,0)
 SKY = (143,203,239)
 PINK = (255,20,147)
 
-# Buttons
-LEFT = 1
-SCROLL = 2
-
-RIGHT = 3
-# Images path'
+# Images path's'
 IMAGE = r'/home/yonatan/Documents/Python/pictures/madagascar_1.jpg'
 PLANE = r'/home/yonatan/Documents/Python/pictures/plane.png'
 BULLET = r'/home/yonatan/Documents/Python/pictures/bullet.png'
-SOUND_FILE_AFTER_KING = r'/home/yonatan/Documents/Python/sounds/HailToTheKing.mp3'
-SOUND_FILE_BEFORE_KING = r'/home/yonatan/Documents/Python/sounds/moveit.mp3'
-SOUND_FILE_BULLET = '/home/yonatan/Documents/Python/sounds/gun_shot.mp3'
+SOUND_FILE_AFTER_KING = r'/home/yonatan/Documents/Python/sounds/King.wav'
+SOUND_FILE_BEFORE_KING = r'/home/yonatan/Documents/Python/sounds/moveit.wav'
+SOUND_FILE_BULLET = r'/home/yonatan/Documents/Python/sounds/bullet.wav'
+SOUND_FILE_BACKGROUND = 'r/home/yonatan/Documents/Python/sounds/background.wav'
+
+# Buttons
+LEFT = 1
+SCROLL = 2
+RIGHT = 3
+
+# Game Control
 REFRESH_RATE = 60
 ZERO = 0
 NUMBER_OF_BALLS = 50
 DISTANCE = 15
-RADIUS = 50
+RADIUS = 300
 SPEED = 15
 KING_EXIST = False
 RIGHT_CLICK = False
 DOWN = True
-MIN_RAD = 45
-MAX_RAD = 150
-HAIL_TO_THE_KING = pygame.mixer.Sound
+MIN_RAD = 45 # Min distance of balls from king
+MAX_RAD = 150 # Max distance of balls from king
+IN_AND_OUT_SPEED = 1
 BULLET_SPEED = 25
-no_bullets = True
+PLAY_AUDIO = False
 
-# Make Sound run in loops
-#def play(sound, start, end):
-    #sound.set_pos(start)
-    #sound.play()
-    #time.sleep(end - start)     # in seconds
-    #sound.stop()
-    #return True
-
-# Vars
+# Changing vars
 global balls_not_in_place
 balls_not_in_place = True
 finish = False
+shot = False
+no_bullets = True
 add_to_angle = 0
 mouse_point_list = []
-shot = False
+bullet_mouse_point_list = []
 timer_list = []
+############################## END of Var definistion ########################################
+
 
 ############### Initialization ##############
 # Init screen
@@ -75,8 +75,9 @@ pygame.display.set_caption("Game")
 # Add img to screen
 img = pygame.image.load(IMAGE)
 
-# Sound effect
-pygame.mixer.init()
+# init Sound effect
+if PLAY_AUDIO:
+    pygame.mixer.init()
 
 # Add clock
 clock = pygame.time.Clock()
@@ -85,24 +86,26 @@ clock = pygame.time.Clock()
 player_image = pygame.image.load(PLANE).convert()
 player_image.set_colorkey(PINK)
 
-# Bullet
+# load Bullets image
 bullet_image = pygame.image.load(BULLET).convert()
 bullet_image.set_colorkey(PINK)
-
 
 # Create a ball list
 ball_list = pygame.sprite.Group() # Create a list of objects
 new_ball_list = pygame.sprite.Group() # Create a list of objects
 bullet_list = pygame.sprite.Group() # Create a king list
-'''
-for i in range(NUMBER_OF_BALLS):
-    ball = Ball(i* DISTANCE, i*DISTANCE)
-    ball_list.add(ball)
-ball_list.draw(screen)
-'''
 
 
-############### FUNCTIONS ###############
+############################## FUNCTIONS #######################################################
+
+# Make Sound run in loops
+#def play(sound, start, end):
+    #sound.set_pos(start)
+    #sound.play()
+    #time.sleep(end - start)     # in seconds
+    #sound.stop()
+    #return True
+
 def debug(whatever):
     print(whatever)
     return
@@ -115,33 +118,32 @@ def rnd_speed():
     return speed
 
 # Create a random king ball
+'''
 def king_math():
     num = random.randrange(0,1000)
     return num == 7
+'''
 
 # Add a ball object
 def add_ball_to_board(x,y):
     global RIGHT_CLICK
     global KING_EXIST
-    if not KING_EXIST: # Stopes adding balls when the king is here
+    if not KING_EXIST: #Stopes adding balls when the king is here
         if RIGHT_CLICK:
             isKING = True
         else:
-            isKING = king_math()
+            isKING = False
         ball = Ball(x, y, isKING)
-        if ball.is_king():
-            #music = pygame.mixer_music
-            #sound = music.load(SOUND_FILE_AFTER_KING)
-            #sound_thread = threading.Thread(target=play, args=([sound, 1, 2]))
-            #sound_thread.start()
 
-            pygame.mixer_music.load(SOUND_FILE_AFTER_KING)
-            pygame.mixer_music.play()
+        # When King is created
+        if ball.is_king():
+            if PLAY_AUDIO:
+                pygame.mixer.Channel(0).play(pygame.mixer.Sound(SOUND_FILE_AFTER_KING))
             vx = 0
             vy = 0
             ball.update_v(vx, vy)
-            global KING_POS
             KING_EXIST = True
+            global KING_POS
             global king_ball
             king_ball = ball # Saves the king ball object
             KING_POS = king_ball.get_pos() # Saves the king ball position
@@ -149,7 +151,7 @@ def add_ball_to_board(x,y):
             vx = rnd_speed()
             vy = rnd_speed()
             ball.update_v(vx, vy)
-        ball_list.add(ball)
+        ball_list.add(ball) # Add ball to ball list
 
 # Sum of balls
 def count_balls(balls_list):
@@ -158,45 +160,45 @@ def count_balls(balls_list):
         num_of_balls += 1
     return num_of_balls -1
 
-
-
 # Create array with circle positions
 def create_king_circle(num_of_balls, move_with_king = False):
     global DOWN
     global MIN_RAD
     global MAX_RAD
-    global add_to_angle
+    global IN_AND_OUT_SPEED
+    global add_to_angle # Make the ball's spin
     global RADIUS
     global king_ball
     global SPEED
     SPEED = num_of_balls
-
-
     circle_pos_list = []
-    X1, Y1 = king_ball.get_pos()
+
+    X1, Y1 = king_ball.get_pos() # Create a center from king position
+    if num_of_balls == 0: # Prevent the program from crashing when there are no balls
+        num_of_balls = 1
     for angle in range(0, 360, int(360/(num_of_balls))):
         if move_with_king:
             if num_of_balls == 1:
-                add_to_angle += 10.8
+                add_to_angle += 10.8 # Make the ball's spin
             else:
-                add_to_angle += math.pi / SPEED
+                add_to_angle += math.pi / SPEED # Make the ball's spin
             angle += add_to_angle
-
 
         X2 = X1 + (math.cos(math.radians(angle)) * RADIUS)
         Y2 = Y1 + (math.sin(math.radians(angle)) * RADIUS)
         cir_pos = (X2,Y2)
         circle_pos_list.append(cir_pos)
-    # Makes dod go in and out
-    if RADIUS == MAX_RAD:
+
+    # Makes the balls go in and out
+
+    if RADIUS >= MAX_RAD:
         DOWN = True
-    elif RADIUS == MIN_RAD:
+    elif RADIUS <= MIN_RAD:
         DOWN = False
     if DOWN:
-        RADIUS -= 1
+        RADIUS -= IN_AND_OUT_SPEED
     else:
-       RADIUS += 1
-
+       RADIUS += IN_AND_OUT_SPEED
 
     return circle_pos_list
 
@@ -262,6 +264,7 @@ def stop_all_balls():
     for ball in ball_list:
         ball.update_v(0,0)
 
+# Makes ball's bounce from corners
 def dont_touch_corners(ball_list):
     if isinstance(ball_list, Iterable):
         for ball in ball_list:
@@ -274,7 +277,6 @@ def dont_touch_corners(ball_list):
                 vx, vy = ball.get_v()
                 ball.update_v(vx, -vy)
 
-
     else: # If this is the king ball
         ball_list.update_loc()
         x, y = ball_list.get_pos()
@@ -285,10 +287,10 @@ def dont_touch_corners(ball_list):
             vx, vy = ball_list.get_v()
             ball_list.update_v(vx, -vy)
 
-def ball_colliosion(ball_list, king_list):
+def ball_colliosion(ball_list, bullet_list):
     new_ball_list.empty()
     for ball in ball_list:
-        ball_hit_list = pygame.sprite.spritecollide(ball, king_list, False)
+        ball_hit_list = pygame.sprite.spritecollide(ball, bullet_list, False)
         if len(ball_hit_list) == 0:
             new_ball_list.add(ball)
         ball_list.empty()
@@ -304,6 +306,7 @@ def the_king_is_here():
     #    debug(create_king_circle(count_balls(ball_list)))
     go_to_pos()
 
+'''
 def move_in_arch(pos_x, pos_y):
     speed = 3
     angle = 1
@@ -312,10 +315,9 @@ def move_in_arch(pos_x, pos_y):
     pos_x += velocity_x
     pos_y += velocity_y
     return  pos_x, pos_y
-
+'''
 def king_is_moving():
     change_to_pos()
-
 
 def continue_board(pre_king):
     if pre_king:
@@ -324,11 +326,15 @@ def continue_board(pre_king):
     else:
         global king_ball
         dont_touch_corners(king_ball)
+        dont_touch_corners(bullet_list)
+
+# Bullet shut function
 def shot_bullet():
     mouse_point_list.append(pygame.mouse.get_pos())
-    #pygame.mixer_music.load(SOUND_FILE_BULLET)
-    #pygame.mixer_music.play()
+    if PLAY_AUDIO:
+        pygame.mixer.Channel(1).play(pygame.mixer.Sound(SOUND_FILE_BULLET))
 
+############################## Actual Program #############################################
 while not finish:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -340,12 +346,10 @@ while not finish:
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT: # and not KING_EXIST
             x, y = pygame.mouse.get_pos()
             add_ball_to_board(x, y)
-            if len(ball_list) == 1:
-                pygame.mixer_music.load(SOUND_FILE_BEFORE_KING)
-                pygame.mixer_music.play()
+            if len(ball_list) == 1 and PLAY_AUDIO and not KING_EXIST:
+                pygame.mixer.Channel(0).play(pygame.mixer.Sound(SOUND_FILE_BEFORE_KING))
             if shot:
                 shot_bullet()
-
 
     if KING_EXIST and balls_not_in_place:
         the_king_is_here()
@@ -370,9 +374,9 @@ while not finish:
             for index in range(0, len(mouse_point_list), 1):
                 timer_list.append(ZERO)  # Create a bullet starting time
                 index_time = timer_list[index]
-                posion = mouse_point_list[index]  # Bullet starting posion
-                bullet_x_pos = posion[0]
-                bullet_y_pos = posion[1]
+                bullet_posion = mouse_point_list[index]  # Bullet starting posion
+                bullet_x_pos = bullet_posion[0]
+                bullet_y_pos = bullet_posion[1]
 
                 bullet_x_pos += index_time  # Move the bullet with time
                 index_time += BULLET_SPEED # Time passing..
@@ -383,8 +387,6 @@ while not finish:
                 screen.blit(bullet_image, [bullet_x_pos, bullet_y_pos])
         screen.blit(player_image, mouse_point)
         pygame.display.flip()
-
-
 
     else:
         continue_board(True)
