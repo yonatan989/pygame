@@ -12,6 +12,7 @@ HORIZONTAL_VELOCITY = 20
 VERTICAL_VELOCITY = 20
 MOVING_IMAGE = r'/home/yonatan/Documents/Python/pictures/dod.png'
 KING_IMAGE = r'/home/yonatan/Documents/Python/pictures/dodKing.png'
+BULLET = '/home/yonatan/Documents/Python/pictures/bullet.png'
 #SLAVES = r'/home/yonatan/Documents/Python/pictures/slaves'
 
 
@@ -58,3 +59,33 @@ class Ball(pygame.sprite.Sprite):
 
     def is_king(self):
         return self.isking
+
+# Create a bullet object
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super(Bullet, self).__init__()
+        self.image = pygame.image.load(BULLET).convert() # Load image
+        self.image.set_colorkey(PINK1)
+        self.rect =  self.image.get_rect() # To save the object location
+        self.rect.x = x # Starting position
+        self.rect.y = y # Starting position
+        self.__vx = HORIZONTAL_VELOCITY # Horizontical speed
+        self.__vy = VERTICAL_VELOCITY # Vertical speed
+
+    def update_v(self, vx, vy):
+        self.__vx = vx
+        self.__vy = vy
+
+    def update_loc(self):
+        self.rect.x += self.__vx
+        self.rect.y += self.__vy
+
+    def get_pos(self):
+        return self.rect.x, self.rect.y
+
+    def set_pos(self, new_x, new_y):
+        self.rect.x = new_x
+        self.rect.y = new_y
+
+    def get_v(self):
+        return self.__vx, self.__vy

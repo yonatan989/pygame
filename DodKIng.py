@@ -6,7 +6,7 @@ import time
 import threading
 from collections import Iterable
 try:
-    from shapes import Ball
+    from shapes import Ball, Bullet
 except ImportError:
     from .shapes import Ball
 
@@ -43,6 +43,7 @@ NUMBER_OF_BALLS = 50
 DISTANCE = 15
 RADIUS = 300
 SPEED = 15
+BULLET_SPEED = 5
 KING_EXIST = False
 RIGHT_CLICK = False
 DOWN = True
@@ -50,7 +51,8 @@ MIN_RAD = 45 # Min distance of balls from king
 MAX_RAD = 150 # Max distance of balls from king
 IN_AND_OUT_SPEED = 1
 BULLET_SPEED = 25
-PLAY_AUDIO = False
+PLAY_AUDIO = True
+PLANE_ADDED = False
 
 # Changing vars
 global balls_not_in_place
@@ -152,6 +154,15 @@ def add_ball_to_board(x,y):
             vy = rnd_speed()
             ball.update_v(vx, vy)
         ball_list.add(ball) # Add ball to ball list
+
+def add_bullet_to_board(x,y):
+    bullet = Bullet(x, y)
+    # When King is created
+    pygame.mixer.Channel(0).play(pygame.mixer.Sound(SOUND_FILE_BULLET))
+    vx = BULLET_SPEED
+    vy = 0
+    bullet.update_v(vx, vy)
+    bullet_list.add(bullet) # Add bullet to bullet list
 
 # Sum of balls
 def count_balls(balls_list):
@@ -331,6 +342,8 @@ def continue_board(pre_king):
 # Bullet shut function
 def shot_bullet():
     mouse_point_list.append(pygame.mouse.get_pos())
+    #x, y = pygame.mouse.get_pos()
+    #add_bullet_to_board(x, y)
     if PLAY_AUDIO:
         pygame.mixer.Channel(1).play(pygame.mixer.Sound(SOUND_FILE_BULLET))
 
@@ -363,7 +376,6 @@ while not finish:
         # Add Plane to game
         mouse_point = (pygame.mouse.get_pos())
         screen.blit(player_image, mouse_point)
-        pygame.display.flip()
 
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
             shot = True
@@ -383,8 +395,8 @@ while not finish:
                 (bullet_image, [bullet_x_pos, bullet_y_pos])
                 del timer_list[index]  # Edit bullet time
                 timer_list.insert(index, index_time)
-
                 screen.blit(bullet_image, [bullet_x_pos, bullet_y_pos])
+
         screen.blit(player_image, mouse_point)
         pygame.display.flip()
 
