@@ -13,6 +13,8 @@ VERTICAL_VELOCITY = 20
 MOVING_IMAGE = r'/home/yonatan/Documents/Python/pictures/dod.png'
 KING_IMAGE = r'/home/yonatan/Documents/Python/pictures/dodKing.png'
 BULLET = '/home/yonatan/Documents/Python/pictures/bullet.png'
+FIRING_ACCURACY = 20
+
 #SLAVES = r'/home/yonatan/Documents/Python/pictures/slaves'
 
 
@@ -23,6 +25,7 @@ class Ball(pygame.sprite.Sprite):
         self.isking = isking
         if (self.isking):
             self.image = pygame.image.load(KING_IMAGE).convert()
+
         else:
             rnd = random.randint(1,10)
             rndSlave = r'/home/yonatan/Documents/Python/pictures/slaves/{0}.png'.format(rnd)
@@ -34,6 +37,8 @@ class Ball(pygame.sprite.Sprite):
         self.rect.y = y # Starting position
         self.__vx = HORIZONTAL_VELOCITY # Horizontical speed
         self.__vy = VERTICAL_VELOCITY # Vertical speed
+        self.rect.width = FIRING_ACCURACY
+        self.rect.height = FIRING_ACCURACY
 
     def update_v(self, vx, vy):
         self.__vx = vx
@@ -50,6 +55,10 @@ class Ball(pygame.sprite.Sprite):
         self.rect.x = new_x
         self.rect.y = new_y
 
+    def change_rect(self, width, height):
+        self.rect.width = width
+        self.rect.height = height
+
 
     def get_v(self):
         return self.__vx, self.__vy
@@ -59,6 +68,15 @@ class Ball(pygame.sprite.Sprite):
 
     def is_king(self):
         return self.isking
+
+    def increase_ball_size (self, king_life):
+        add_size = (10 - king_life)
+        current_size = self.image.get_rect()
+        current_size.x += add_size
+        current_size.y += add_size
+
+        self.image = pygame.image.load(KING_IMAGE).convert()
+        self.image = pygame.transform.scale(self.image, (current_size.x, current_size.y))
 
 # Create a bullet object
 class Bullet(pygame.sprite.Sprite):
@@ -71,6 +89,8 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.y = y # Starting position
         self.__vx = HORIZONTAL_VELOCITY # Horizontical speed
         self.__vy = VERTICAL_VELOCITY # Vertical speed
+        self.rect.width = FIRING_ACCURACY
+        self.rect.height = FIRING_ACCURACY
 
     def update_v(self, vx, vy):
         self.__vx = vx
