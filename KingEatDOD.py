@@ -23,6 +23,7 @@ IMAGE = r'/home/yonatan/Documents/Python/pictures/dog.jpeg'
 PLANE = r'C:\Users\s8425597\Documents\Python\pictures\plane.png'
 BULLET = r'C:\Users\s8425597\Documents\Python\pictures\doood.png'
 SOUND_FILE = r'/home/yonatan/Documents/Python/sounds/gun_shot.mp3'
+
 REFRESH_RATE = 60
 ZERO = 0
 NUMBER_OF_BALLS = 50
