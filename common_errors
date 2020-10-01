@@ -1,0 +1,8 @@
+##### ERROR #####
+No protocol specified Error: Can't open display: :
+
+
+
+##### FIX #####
+URL: https://unix.stackexchange.com/questions/118811/why-cant-i-run-gui-apps-from-root-no-protocol-specified
+COMMAND:  xhost +si:localuser:root
