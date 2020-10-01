@@ -1,4 +1,4 @@
-############READ ME ##################
+############################## READ ME ########################################
 #UPPER_CASE = Fixed variables
 #lowerCase = Daynamic variables
 #list_type = list objects
@@ -6,7 +6,7 @@
 #add_ball_to_board = function name
 
 
-########### Game stages #############
+### Game stages ###
 # 1 - Slaves stage
 # 2 - King is here
 # 3 - Slaves in circle around king
@@ -17,6 +17,8 @@
 # win - flower (kill devils with harts)
 # lose - game ends
 
+
+############################## Impoting ########################################
 
 import pygame
 import random
@@ -510,13 +512,12 @@ def shot_bullet():
         # Shot harts if there are no balls left else shot bullet
         if not theMeteorStage:
             is_hart = True
+            add_bullet_to_board(bulletXPos, bulletYPos, is_hart)
 
         # Shot only if there are bullets left and its the meteor stage
         elif numOfBullets > 0 and theMeteorStage:
             numOfBullets -=1
-
-    add_bullet_to_board(bulletXPos, bulletYPos, is_hart)
-
+            add_bullet_to_board(bulletXPos, bulletYPos, is_hart)
 
 ############################## Actual Program #############################################
 while not finish:
