@@ -4,8 +4,8 @@
                           The Meteor Age
                          ----------------
 
- General        : This python has 7 stage, the app was containerized and should work properly
-		  on every Linux distributions, for bug fixes read the common_error file
+ General        : This python game has 7 stage, the app was containerized and should work properly
+#                 on every Linux distributions, for bug fixes read the common_error file
           	  
 
  Process        : clone the project -->  run build.sh file -->  run run.sh file
