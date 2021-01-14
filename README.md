@@ -4,7 +4,7 @@
                           The Meteor Age
                          ----------------
 
- General        : This python game has 7 stage, the app was containerized and should work properly
+ General        : This python game has 7 stages, the app was containerized and should work properly
                   on every Linux distributions, for bug fixes read the common_error file
           	  
 
